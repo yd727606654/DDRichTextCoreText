@@ -21,12 +21,6 @@
     DDCTRichTextView *textV = [[DDCTRichTextView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)];
     textV.text = kContentString;
     [self.view addSubview:textV];
-    
-//    NSString *s = @"😀😀1";
-//  NSUInteger len =  [s length];
-//    DDRichTextView *view = [[DDRichTextView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)];
-//    view.oldString = kContentString;
-//    [self.view addSubview:view];
 }
 
 - (void)didReceiveMemoryWarning {
