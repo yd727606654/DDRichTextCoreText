@@ -25,7 +25,7 @@
 }
 -(void)DDTouchTextViewModel:(DDTouchTextViewModel)model text:(NSString *)text
 {
-    NSLog(@"%d === %@",model,text);
+    NSLog(@"%ld === %@",(long)model,text);
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

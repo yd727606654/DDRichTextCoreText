@@ -13,7 +13,16 @@
 #import "DDCoreTextLinkData.h"
 #import "DDCoreTextUtils.h"
 #import "DDCoreTextPhoneNumber.h"
+
+typedef NS_ENUM(NSUInteger, DDCTRichTextViewState) {
+    DDCTRichTextViewNormal,
+    DDCTRichTextViewSelecting
+};
+
 @interface DDCTRichTextView()
+
+@property (nonatomic, assign) DDCTRichTextViewState state;
+
 @end
 
 NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
@@ -36,14 +45,66 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
     UIGestureRecognizer * tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(userTapGestureDetected:)];
     [self addGestureRecognizer:tapRecognizer];
     // 文本处理手势
-//    UIGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(userLongPressedGuestureDetected:)];
-//    [self addGestureRecognizer:longPressRecognizer];
+    UIGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(userLongPressedGuestureDetected:)];
+    [self addGestureRecognizer:longPressRecognizer];
     
     self.userInteractionEnabled = YES;
 
 }
+
+- (void)userLongPressedGuestureDetected:(UILongPressGestureRecognizer *)recognizer{
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
+        [self longClickDDCoreTextView];
+    }
+}
+- (void)longClickDDCoreTextView{
+    self.state = DDCTRichTextViewSelecting;
+    UIView *myselfSelected = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+    myselfSelected.tag = 199102;
+    [self insertSubview:myselfSelected belowSubview:self];
+    myselfSelected.backgroundColor = [UIColor colorWithWhite:0 alpha:0.4];
+        //!!!:添加复制功能
+        [self becomeFirstResponder];
+        UIMenuController *menuVC = [UIMenuController sharedMenuController];
+        [menuVC setTargetRect:self.frame inView:self.superview];
+        UIMenuItem *item1 = [[UIMenuItem alloc] initWithTitle:@"复制" action:@selector(customCopy:)];
+        menuVC.menuItems =  @[item1];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(menuControllerHider) name:UIMenuControllerDidHideMenuNotification object:nil];
+        [menuVC setMenuVisible:YES animated:YES];
+
+}
+- (void)customCopy:(id)sender
+{
+    NSString *contentString = _text;
+    UIPasteboard *pboard = [UIPasteboard generalPasteboard];
+    pboard.string = contentString;
+    
+}
+- (void)menuControllerHider
+{
+    self.state = DDCTRichTextViewNormal;
+    [self removeLongClickArea];
+}
+- (void)removeLongClickArea{
+    
+    if ([self viewWithTag:199102]) {
+        [[self viewWithTag:199102] removeFromSuperview];
+    }
+}
+- (BOOL)canBecomeFirstResponder {
+    return YES;
+}
 - (void)userTapGestureDetected:(UIGestureRecognizer *)recognizer
 {
+    if (self.state == DDCTRichTextViewSelecting) {
+        self.state = DDCTRichTextViewNormal;
+        [self removeLongClickArea];
+         UIMenuController *menuVC = [UIMenuController sharedMenuController];
+        if (menuVC.menuVisible) {
+            [menuVC setMenuVisible:NO animated:YES];
+        }
+        return;
+    }
     CGPoint point = [recognizer locationInView:self];
         for (DDCoreTextImageData * imageData in self.data.imageArray) {
             // 翻转坐标系，因为imageData中的坐标是CoreText的坐标系
@@ -131,4 +192,7 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
 
 }
 
+- (void)dealloc{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 @end
