@@ -23,9 +23,19 @@
    DDCTFrameParserConfig *config = [[DDCTFrameParserConfig alloc] init];
     NSString *patter = richText.pattern;
     NSString *text = richText.text;
+    if (richText.textColor) {
+        config.textColor = richText.textColor;
+    }
+    config.width = richText.frame.size.width;
+    if (richText.fontSize) {
+         config.fontSize = richText.fontSize;
+    }
+
+    
    NSString *objectReplacementChar = @" ";
     NSArray *imageRanges = [DDRegularExpression getRangesWithPattern:patter inString:text];
     NSString *parsedText = [text replaceCharactersInRanges:imageRanges WithString:objectReplacementChar];
+    
     // text
     NSMutableAttributedString *attributedString = [self parseAttributedWithContent:parsedText config:config];
     // image
@@ -44,21 +54,26 @@
         
     }
     // link
-    DDCTFrameParserConfig *linkConfig = [[DDCTFrameParserConfig alloc] init];
-    linkConfig.textColor = [UIColor blueColor];
+    if (richText.linkColor) {
+        config.textColor = richText.linkColor;
+    }else{
+        config.textColor = [UIColor blueColor];
+    }
+    
    NSArray *links = [DDRegularExpression matchWebLinkString:parsedText];
     for (DDCoreTextLinkData *link in links) {
         NSString *linkString = [parsedText substringWithRange:link.range];
-      NSAttributedString *linkAttributedString =  [self parseAttributedWithContent:linkString config:linkConfig];
+      NSAttributedString *linkAttributedString =  [self parseAttributedWithContent:linkString config:config];
         [attributedString replaceCharactersInRange:link.range withAttributedString:linkAttributedString];
     }
-    
+    // number
+    if (richText.numberColor) {
+        config.textColor = richText.numberColor;
+    }
     NSArray *phoneNums = [DDRegularExpression matchMobileLink:parsedText];
-    DDCTFrameParserConfig *phoneNumberConfig = [[DDCTFrameParserConfig alloc] init];
-    phoneNumberConfig.textColor = [UIColor greenColor];
     for (DDCoreTextPhoneNumber *phoneNum in phoneNums) {
         NSString *phoneNumberString = [parsedText substringWithRange:phoneNum.range];
-        NSAttributedString *phoneNumberAttributedString =  [self parseAttributedWithContent:phoneNumberString config:phoneNumberConfig];
+        NSAttributedString *phoneNumberAttributedString =  [self parseAttributedWithContent:phoneNumberString config:config];
         [attributedString replaceCharactersInRange:phoneNum.range withAttributedString:phoneNumberAttributedString];
     }
     
@@ -67,9 +82,6 @@
     data.imageArray = imageDatas;
     data.linkArray = links;
     data.phoneNumberArray = phoneNums;
-//    NSAttributedString *str = [self getAttributedStringWithRanges:newRanges paresedText:_parsedText];
-//    typesetter = CTTypesetterCreateWithAttributedString((CFAttributedStringRef)
-//                                                        (str));
     return data;
 }
 

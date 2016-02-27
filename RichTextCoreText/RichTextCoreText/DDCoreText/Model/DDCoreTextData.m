@@ -19,13 +19,7 @@
         _ctFrame = ctFrame;
     }
 }
--(void)dealloc
-{
-    if (_ctFrame != nil) {
-        CFRelease(_ctFrame);
-        _ctFrame = nil;
-    }
-}
+
 - (void)setImageArray:(NSArray *)imageArray {
     _imageArray = imageArray;
     [self fillImagePosition];
@@ -89,5 +83,11 @@
         }
     }
 }
-
+-(void)dealloc
+{
+    if (_ctFrame != nil) {
+        CFRelease(_ctFrame);
+        _ctFrame = nil;
+    }
+}
 @end

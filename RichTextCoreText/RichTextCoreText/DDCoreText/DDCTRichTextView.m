@@ -12,6 +12,7 @@
 #import "DDCTFrameParser.h"
 #import "DDCoreTextLinkData.h"
 #import "DDCoreTextUtils.h"
+#import "DDCoreTextPhoneNumber.h"
 @interface DDCTRichTextView()
 @end
 
@@ -53,20 +54,29 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
             // 检测点击位置 Point 是否在rect之内
             if (CGRectContainsPoint(rect, point)) {
                 NSLog(@"hint image imageName = %@, imageposition = %d", imageData.name, imageData.position);
-//                
-//                NSDictionary *userInfo = @{ @"imageData": imageData };
-//                [[NSNotificationCenter defaultCenter] postNotificationName:CTDisplayViewImagePressedNotification object:self userInfo:userInfo];
+                if ([self.delegate respondsToSelector:@selector(DDTouchTextViewModel:text:)]) {
+                    [self.delegate DDTouchTextViewModel:DDTouchImageModel text:imageData.name];
+                }
                 return;
         }
         // 检测是否链接
         DDCoreTextLinkData *linkData = [DDCoreTextUtils touchLinkInView:self atPoint:point data:self.data];
         if (linkData) {
             NSLog(@"%@ === hint link!",linkData.url);
-//            NSDictionary *userInfo = @{ @"linkData": linkData };
-//            [[NSNotificationCenter defaultCenter] postNotificationName:CTDisplayViewLinkPressedNotification
-//                                                                object:self userInfo:userInfo];
+            if ([self.delegate respondsToSelector:@selector(DDTouchTextViewModel:text:)]) {
+                [self.delegate DDTouchTextViewModel:DDTouchLinkModel text:linkData.url];
+            }
             return;
         }
+            // 检测是否电话
+            DDCoreTextPhoneNumber *numberData = [DDCoreTextUtils touchNumberInView:self atPoint:point data:self.data];
+            if (numberData) {
+                NSLog(@"%@ === hint number!",numberData.phoneNumber);
+                if ([self.delegate respondsToSelector:@selector(DDTouchTextViewModel:text:)]) {
+                    [self.delegate DDTouchTextViewModel:DDTouchPhoneNumber text:numberData.phoneNumber];
+                }
+                return;
+            }
     }
     
 }
@@ -96,11 +106,11 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
         return;
     }
     
-    // 步骤1 CGContextRef CG CoreGraphics Ref 引用
+    // CGContextRef CG CoreGraphics Ref 引用
     // 目前的上下文都跟UIGraphics有关，以后想直接获取上下文，直接敲一个UIGraphics
     CGContextRef context = UIGraphicsGetCurrentContext();
     
-    // 步骤2
+
     //用来为每一个显示的字形单独设置变形矩阵
     CGContextSetTextMatrix(context, CGAffineTransformIdentity);
     //CGContextTranslateCTM的作用变换坐标系中的原点
@@ -120,26 +130,5 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @end

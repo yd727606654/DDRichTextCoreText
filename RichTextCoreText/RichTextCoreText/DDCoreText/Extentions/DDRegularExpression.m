@@ -63,7 +63,7 @@
     NSMutableArray *tempRanges = [[NSMutableArray alloc] initWithCapacity:[ranges count]];
     for(NSInteger i = 0; i < [ranges count]; i++)
     {
-        @autoreleasepool {
+        
             NSRange range = [[ranges objectAtIndex:i] rangeValue];
             prevLength    = range.length;
             
@@ -72,26 +72,30 @@
             [tempRanges addObject:NSStringFromRange(range)];
             
             aOffset = aOffset + prevLength - offset;
-        }
+        
     }
     
     return [tempRanges copy];
 }
 + (NSArray *)matchMobileLink:(NSString *)aString{
-    
+   
+   
     NSMutableArray *linkArr = [NSMutableArray arrayWithCapacity:0];
+     NSError *error = nil;
     NSRegularExpression*regular=[[NSRegularExpression alloc]initWithPattern:@"(\\(86\\))?(13[0-9]|15[0-35-9]|18[0125-9])\\d{8}" options:NSRegularExpressionDotMatchesLineSeparators|NSRegularExpressionCaseInsensitive error:nil];
-    
+    if (error) {
+        NSLog(@"%@", error);
+        return nil;
+    }
     NSArray* array=[regular matchesInString:aString options:0 range:NSMakeRange(0, [aString length])];
     
     for( NSTextCheckingResult * result in array){
-        @autoreleasepool {
+      
             DDCoreTextPhoneNumber *phoneNumber = [[DDCoreTextPhoneNumber alloc] init];
             phoneNumber.phoneNumber = [aString substringWithRange:result.range];
             phoneNumber.range = result.range;
-//            NSMutableDictionary * dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:string,NSStringFromRange(result.range), nil];
-            [linkArr addObject:phoneNumber];
-        }
+        [linkArr addObject:phoneNumber];
+        
     }
     
     return [linkArr copy];
@@ -105,14 +109,14 @@
       NSRegularExpression*regular=[[NSRegularExpression alloc]initWithPattern:@"((http[s]{0,1}|ftp)://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)|(www.[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)" options:NSRegularExpressionDotMatchesLineSeparators|NSRegularExpressionCaseInsensitive error:nil];
     NSArray *results=[regular matchesInString:aString options:0 range:NSMakeRange(0, [aString length])];
     for( NSTextCheckingResult * result in results){
-        @autoreleasepool {
+       
             DDCoreTextLinkData *link = [[DDCoreTextLinkData alloc] init];
             link.url = [aString substringWithRange:result.range];
             link.range = result.range;
             [links addObject:link];
-        }
         
     }
+    
     return [links copy];
 }
 @end

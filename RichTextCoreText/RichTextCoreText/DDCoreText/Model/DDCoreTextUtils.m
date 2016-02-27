@@ -20,6 +20,14 @@
     DDCoreTextLinkData * foundLink = [self linkAtIndex:idx linkArray:data.linkArray];
     return foundLink;
 }
++ (DDCoreTextPhoneNumber *)touchNumberInView:(UIView *)view atPoint:(CGPoint)point data:(DDCoreTextData *)data{
+     CFIndex idx = [self touchContentOffsetInView:view atPoint:point data:data];
+    if (idx == -1) {
+        return nil;
+    }
+    DDCoreTextPhoneNumber * foundNumber = [self numberAtIndex:idx numberArray:data.phoneNumberArray];
+    return foundNumber;
+}
 // 将点击的位置转换成字符串的偏移量，如果没有找到，则返回-1
 + (CFIndex)touchContentOffsetInView:(UIView *)view atPoint:(CGPoint)point data:(DDCoreTextData *)data {
     
@@ -80,5 +88,14 @@
     }
     return link;
 }
-
++ (DDCoreTextPhoneNumber *)numberAtIndex:(CFIndex)i numberArray:(NSArray *)numberArray {
+    DDCoreTextPhoneNumber *link = nil;
+    for (DDCoreTextPhoneNumber *data in numberArray) {
+        if (NSLocationInRange(i, data.range)) {
+            link = data;
+            break;
+        }
+    }
+    return link;
+}
 @end

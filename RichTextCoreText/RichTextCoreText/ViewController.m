@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import "DDCTRichTextView.h"
 #define kContentString @"12qqhttps://www.baidu.com我 18220862691ddddd 😀😀#[face/png/f_static_000.png]##[face/png/f_static_000.png]##[face/png/f_static_000.png]##[face/png/f_static_000.png]##[face/png/f_static_001.png]##[face/png/f_static_001.png]##[face/png/f_static_001.png]#😀😀😀18220862691"
-@interface ViewController ()
+@interface ViewController ()<DDCTRichTextViewDelegate>
 
 @end
 
@@ -18,11 +18,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    DDCTRichTextView *textV = [[DDCTRichTextView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)];
+    DDCTRichTextView *textV = [[DDCTRichTextView alloc] initWithFrame:CGRectMake(100, 100, 100, 100)];
     textV.text = kContentString;
+    textV.delegate = self;
     [self.view addSubview:textV];
 }
-
+-(void)DDTouchTextViewModel:(DDTouchTextViewModel)model text:(NSString *)text
+{
+    NSLog(@"%d === %@",model,text);
+}
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
