@@ -21,6 +21,7 @@
     DDCTRichTextView *textV = [[DDCTRichTextView alloc] initWithFrame:CGRectMake(100, 100, 100, 100)];
     textV.text = kContentString;
     textV.delegate = self;
+    textV.clickModel = DDCTRichTextViewLinkAble ;
     [self.view addSubview:textV];
 }
 -(void)DDTouchTextViewModel:(DDTouchTextViewModel)model text:(NSString *)text

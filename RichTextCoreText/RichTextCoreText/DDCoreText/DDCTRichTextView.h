@@ -10,6 +10,12 @@
 #import "DDCTFrameParserConfig.h"
 #import "DDCoreTextData.h"
 
+typedef NS_OPTIONS(NSUInteger, DDCTRichTextViewAbleClickModel){
+    DDCTRichTextViewImageAble = 1 << 0,
+    DDCTRichTextViewLinkAble = 1 << 1,
+    DDCTRichTextViewPhoneNumAble = 1 << 2
+};
+
 typedef NS_ENUM(NSInteger, DDTouchTextViewModel) {
     DDTouchImageModel,
     DDTouchLinkModel,
@@ -26,7 +32,8 @@ typedef NS_ENUM(NSInteger, DDTouchTextViewModel) {
 @interface DDCTRichTextView : UIView
 
 @property (nonatomic, weak) id <DDCTRichTextViewDelegate> delegate;
-
+// default is all
+@property (nonatomic, assign) DDCTRichTextViewAbleClickModel clickModel;
 @property (nonatomic, copy) NSString *text;
 // 图片正则式
 @property (nonatomic, copy) NSString *pattern;

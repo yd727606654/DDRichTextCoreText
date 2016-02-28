@@ -19,6 +19,7 @@ typedef NS_ENUM(NSUInteger, DDCTRichTextViewState) {
     DDCTRichTextViewSelecting
 };
 
+
 @interface DDCTRichTextView()
 
 @property (nonatomic, assign) DDCTRichTextViewState state;
@@ -34,6 +35,7 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
     self = [super initWithFrame:frame];
     if (self) {
         self.backgroundColor = [UIColor whiteColor];
+        self.clickModel = DDCTRichTextViewImageAble | DDCTRichTextViewLinkAble | DDCTRichTextViewPhoneNumAble;
         [self parseGestureRecognizer];
     }
     return self;
@@ -105,7 +107,10 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
         }
         return;
     }
+    
     CGPoint point = [recognizer locationInView:self];
+    if ((self.clickModel & 1) == DDCTRichTextViewImageAble) {
+        // 检测是否图片
         for (DDCoreTextImageData * imageData in self.data.imageArray) {
             // 翻转坐标系，因为imageData中的坐标是CoreText的坐标系
             CGRect imageRect = imageData.imagePosition;
@@ -119,7 +124,10 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
                     [self.delegate DDTouchTextViewModel:DDTouchImageModel text:imageData.name];
                 }
                 return;
+            }
         }
+    }
+    if ((self.clickModel & 1<<1) == DDCTRichTextViewLinkAble) {
         // 检测是否链接
         DDCoreTextLinkData *linkData = [DDCoreTextUtils touchLinkInView:self atPoint:point data:self.data];
         if (linkData) {
@@ -129,6 +137,9 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
             }
             return;
         }
+
+    }
+        if ((self.clickModel & 1<<2) == DDCTRichTextViewPhoneNumAble) {
             // 检测是否电话
             DDCoreTextPhoneNumber *numberData = [DDCoreTextUtils touchNumberInView:self atPoint:point data:self.data];
             if (numberData) {
@@ -138,7 +149,7 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
                 }
                 return;
             }
-    }
+        }
     
 }
 
