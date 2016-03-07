@@ -11,7 +11,7 @@
 @implementation NSString (DDRegularExtension)
 - (NSString *)replaceCharactersInRanges:(NSArray *)ranges WithString:(NSString *)aString
 {
-    if (!ranges) return aString;
+    if (!ranges) return self;
     if (!aString) aString = @"";
     NSMutableString *mutableString = [self mutableCopy];
     for (int i = (int)ranges.count - 1; i >= 0; i--) {

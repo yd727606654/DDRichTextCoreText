@@ -88,6 +88,7 @@
 #pragma mark - 属性解析
 + (NSMutableDictionary *)attributesWithConfig:(DDCTFrameParserConfig *)config
 {
+    
     CGFloat fontSize = config.fontSize;
     CTFontRef fontRef = CTFontCreateWithName((CFStringRef)@"ArialMT", fontSize, NULL);
     CGFloat lineSpacing = config.lineSpace;
@@ -96,7 +97,13 @@
         { kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof(CGFloat), &lineSpacing },
         { kCTParagraphStyleSpecifierMaximumLineSpacing, sizeof(CGFloat), &lineSpacing },
         { kCTParagraphStyleSpecifierMinimumLineSpacing, sizeof(CGFloat), &lineSpacing }
+//        { kCTParagraphStyleSpecifierAlignment, sizeof(CGFloat), &lineSpacing}
     };
+    
+    
+    
+
+    
     CTParagraphStyleRef theParagraphRef = CTParagraphStyleCreate(theSettings, kNumberOfSettings);
     
     UIColor * textColor = config.textColor;
@@ -105,7 +112,7 @@
     dict[(id)kCTForegroundColorAttributeName] = (id)textColor.CGColor;
     dict[(id)kCTFontAttributeName] = (__bridge id)fontRef;
     dict[(id)kCTParagraphStyleAttributeName] = (__bridge id)theParagraphRef;
-    
+//    dict[(id)kCTkernAttributeName] = (__bridge id)theParagraphRef;
     CFRelease(theParagraphRef);
     CFRelease(fontRef);
     return dict;
@@ -119,15 +126,19 @@
     CGSize restrictSize = CGSizeMake(config.width, CGFLOAT_MAX);
     CGSize coreTextSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0,0), nil, restrictSize, nil);
     CGFloat textHeight = coreTextSize.height;
-    
+
     // 生成 CTFrameRef 实例
-    CTFrameRef frame = [self createFrameWithFramesetter:framesetter config:config height:textHeight];
+    CTFrameRef frame = [self createFrameWithFramesetter:framesetter config:config height:textHeight width:coreTextSize.width];
+
+    
+    
     
     // 将生成好的 CTFrameRef 实例和计算好的缓制高度保存到 CoreTextData 实例中，最后返回 CoreTextData 实例
     DDCoreTextData *data = [[DDCoreTextData alloc] init];
     data.ctFrame = frame;
     data.height = textHeight;
     data.content = content;
+    data.width = coreTextSize.width;
     // 释放内存
     CFRelease(frame);
     CFRelease(framesetter);
@@ -135,10 +146,11 @@
 }
 + (CTFrameRef)createFrameWithFramesetter:(CTFramesetterRef)framesetter
                                   config:(DDCTFrameParserConfig *)config
-                                  height:(CGFloat)height {
+                                  height:(CGFloat)height
+                                   width:(CGFloat)width{
     
     CGMutablePathRef path = CGPathCreateMutable();
-    CGPathAddRect(path, NULL, CGRectMake(0, 0, config.width, height));
+    CGPathAddRect(path, NULL, CGRectMake(0, 0, width, height));
     
     CTFrameRef frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL);
     CFRelease(path);
@@ -160,13 +172,14 @@
     // CTRunDelegateCallbacks才是真正定义字形宽度、向上高度和向下高度的结构体
 //    NSDictionary *dict = @{@"imageWidth":[NSNumber numberWithFloat:config.fontSize]};
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithFloat:config.fontSize],@"imageWidth", nil];
+    
     CTRunDelegateCallbacks callbacks;
     memset(&callbacks, 0, sizeof(CTRunDelegateCallbacks));
     callbacks.version = kCTRunDelegateVersion1;
     callbacks.getAscent = ascentCallback;
     callbacks.getDescent = descentCallback;
     callbacks.getWidth = widthCallback;
-    CTRunDelegateRef delegate = CTRunDelegateCreate(&callbacks, (__bridge void *)(dict));
+    CTRunDelegateRef delegate = CTRunDelegateCreate(&callbacks, (__bridge  void *)(dict));
     
     // 使用0xFFFC作为空白的占位符
     unichar objectReplacementChar = 0xFFFC;

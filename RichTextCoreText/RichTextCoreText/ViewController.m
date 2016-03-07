@@ -8,7 +8,7 @@
 
 #import "ViewController.h"
 #import "DDCTRichTextView.h"
-#define kContentString @"12qqhttps://www.baidu.com我 18220862691ddddd 😀😀#[face/png/f_static_000.png]##[face/png/f_static_000.png]##[face/png/f_static_000.png]##[face/png/f_static_000.png]##[face/png/f_static_001.png]##[face/png/f_static_001.png]##[face/png/f_static_001.png]#😀😀😀18220862691"
+#define kContentString @"12qq"
 @interface ViewController ()<DDCTRichTextViewDelegate>
 
 @end

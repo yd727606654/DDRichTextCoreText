@@ -11,6 +11,7 @@
 @interface DDCoreTextData : NSObject
 @property (nonatomic, assign) CTFrameRef ctFrame;
 @property (nonatomic, assign) CGFloat height;
+@property (nonatomic, assign) CGFloat width;
 @property (strong, nonatomic) NSArray * imageArray;
 @property (strong, nonatomic) NSArray * linkArray;
 @property (strong, nonatomic) NSArray * phoneNumberArray;

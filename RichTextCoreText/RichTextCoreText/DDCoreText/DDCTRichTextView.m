@@ -163,6 +163,7 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
     _data = [DDCTFrameParser parserText:self];
     CGRect frame = self.frame;
     frame.size.height = _data.height;
+    frame.size.width = _data.width;
     self.frame = frame;
     
 }
