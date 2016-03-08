@@ -10,7 +10,16 @@
 #import <UIKit/UIKit.h>
 @interface DDCTFrameParserConfig : NSObject
 @property (nonatomic, assign) CGFloat width;
-@property (nonatomic, assign) CGFloat fontSize;
+@property (nonatomic, assign) CGFloat textSize;
 @property (nonatomic, assign) CGFloat lineSpace;
+// default is darkGrayColor
 @property (nonatomic, strong) UIColor *textColor;
+// default is blue
+@property (nonatomic, strong) UIColor *linkColor;
+@property (nonatomic, strong) UIColor *numberColor;
+
+// 图片正则式
+@property (nonatomic, copy) NSString *pattern;
+
+
 @end

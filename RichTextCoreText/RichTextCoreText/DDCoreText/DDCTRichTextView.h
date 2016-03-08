@@ -34,18 +34,10 @@ typedef NS_ENUM(NSInteger, DDTouchTextViewModel) {
 @property (nonatomic, weak) id <DDCTRichTextViewDelegate> delegate;
 // default is all
 @property (nonatomic, assign) DDCTRichTextViewAbleClickModel clickModel;
-@property (nonatomic, copy) NSString *text;
-// 图片正则式
-@property (nonatomic, copy) NSString *pattern;
-//optional
-// default is 14
-@property (nonatomic,assign) CGFloat fontSize;
-// default is darkGrayColor
-@property (nonatomic, strong) UIColor *textColor;
-// default is blue
-@property (nonatomic, strong) UIColor *linkColor;
-@property (nonatomic, strong) UIColor *numberColor;
+
 @property (nonatomic, strong)  DDCoreTextData *data;
-@property (nonatomic, readonly, assign) CGFloat height;
+
+@property (nonatomic, readonly, assign) CGSize size;
+@property (nonatomic, copy, readonly) NSString *text;
 
 @end

@@ -10,70 +10,58 @@
 #import "DDCTFrameParserConfig.h"
 #import "DDRegularExpression.h"
 #import "NSString+DDRegularExtension.h"
-#import "DDCTRichTextView.h"
 #import "DDCoreTextData.h"
 #import "DDCoreTextImageData.h"
 #import "CoreText/CoreText.h"
 #import "DDCoreTextLinkData.h"
 #import "DDCoreTextPhoneNumber.h"
+
+typedef NS_ENUM(NSInteger,TextModel) {
+    TextModelContent,
+    TextModelImage,
+    TextModelLink,
+    TextModelNumber
+};
+
 @implementation DDCTFrameParser
 
-+ (DDCoreTextData *)parserText:(DDCTRichTextView *)richText
-{
-   DDCTFrameParserConfig *config = [[DDCTFrameParserConfig alloc] init];
-    NSString *patter = richText.pattern;
-    NSString *text = richText.text;
-    if (richText.textColor) {
-        config.textColor = richText.textColor;
-    }
-    config.width = richText.frame.size.width;
-    if (richText.fontSize) {
-         config.fontSize = richText.fontSize;
-    }
-
-    
-   NSString *objectReplacementChar = @" ";
++ (DDCoreTextData *)parserText:(DDCTFrameParserConfig *)config text:(NSString *)text{
+    NSString *patter = config.pattern;
+    NSString *objectReplacementChar = @" ";
     NSArray *imageRanges = [DDRegularExpression getRangesWithPattern:patter inString:text];
     NSString *parsedText = [text replaceCharactersInRanges:imageRanges WithString:objectReplacementChar];
     
     // text
-    NSMutableAttributedString *attributedString = [self parseAttributedWithContent:parsedText config:config];
+    NSMutableAttributedString *attributedString = [self parseAttributedWithContent:parsedText config:config textModel:TextModelContent];
     // image
     NSArray *imageNames = [DDRegularExpression getImageNamesWithPattern:patter inString:text];
     NSArray * newRanges = [DDRegularExpression getImageRangesWitholdRanges:imageRanges offsetRangesInArrayBy:[objectReplacementChar length]];
     NSMutableArray *imageDatas = [NSMutableArray arrayWithCapacity:1];
     for (int i = 0; i < imageNames.count; i++) {
-       
-            DDCoreTextImageData *imageData = [[DDCoreTextImageData alloc] init];
-            imageData.name =[NSString stringWithFormat:@"f_static_%@.png",[imageNames objectAtIndex:i]] ;
-            NSRange range = NSRangeFromString(newRanges[i]);
-            imageData.position = (int)range.location;
-            [imageDatas addObject:imageData];
-           NSAttributedString *imageStr = [self parseImageDataFromconfig:config];
-            [attributedString replaceCharactersInRange:range withAttributedString:imageStr];
+        
+        DDCoreTextImageData *imageData = [[DDCoreTextImageData alloc] init];
+        imageData.name =[NSString stringWithFormat:@"f_static_%@.png",[imageNames objectAtIndex:i]] ;
+        NSRange range = NSRangeFromString(newRanges[i]);
+        imageData.position = (int)range.location;
+        [imageDatas addObject:imageData];
+        NSAttributedString *imageStr = [self parseImageDataFromconfig:config];
+        [attributedString replaceCharactersInRange:range withAttributedString:imageStr];
         
     }
     // link
-    if (richText.linkColor) {
-        config.textColor = richText.linkColor;
-    }else{
-        config.textColor = [UIColor blueColor];
-    }
-    
-   NSArray *links = [DDRegularExpression matchWebLinkString:parsedText];
+
+    NSArray *links = [DDRegularExpression matchWebLinkString:parsedText];
     for (DDCoreTextLinkData *link in links) {
         NSString *linkString = [parsedText substringWithRange:link.range];
-      NSAttributedString *linkAttributedString =  [self parseAttributedWithContent:linkString config:config];
+        NSAttributedString *linkAttributedString =  [self parseAttributedWithContent:linkString config:config textModel:TextModelLink];
         [attributedString replaceCharactersInRange:link.range withAttributedString:linkAttributedString];
     }
     // number
-    if (richText.numberColor) {
-        config.textColor = richText.numberColor;
-    }
+
     NSArray *phoneNums = [DDRegularExpression matchMobileLink:parsedText];
     for (DDCoreTextPhoneNumber *phoneNum in phoneNums) {
         NSString *phoneNumberString = [parsedText substringWithRange:phoneNum.range];
-        NSAttributedString *phoneNumberAttributedString =  [self parseAttributedWithContent:phoneNumberString config:config];
+        NSAttributedString *phoneNumberAttributedString =  [self parseAttributedWithContent:phoneNumberString config:config textModel:TextModelNumber];
         [attributedString replaceCharactersInRange:phoneNum.range withAttributedString:phoneNumberAttributedString];
     }
     
@@ -82,14 +70,15 @@
     data.imageArray = imageDatas;
     data.linkArray = links;
     data.phoneNumberArray = phoneNums;
+    data.text = text;
     return data;
 }
 
 #pragma mark - 属性解析
-+ (NSMutableDictionary *)attributesWithConfig:(DDCTFrameParserConfig *)config
++ (NSMutableDictionary *)attributesWithConfig:(DDCTFrameParserConfig *)config textModel:(TextModel)textModel
 {
     
-    CGFloat fontSize = config.fontSize;
+    CGFloat fontSize = config.textSize;
     CTFontRef fontRef = CTFontCreateWithName((CFStringRef)@"ArialMT", fontSize, NULL);
     CGFloat lineSpacing = config.lineSpace;
     const CFIndex kNumberOfSettings = 3;
@@ -97,7 +86,6 @@
         { kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof(CGFloat), &lineSpacing },
         { kCTParagraphStyleSpecifierMaximumLineSpacing, sizeof(CGFloat), &lineSpacing },
         { kCTParagraphStyleSpecifierMinimumLineSpacing, sizeof(CGFloat), &lineSpacing }
-//        { kCTParagraphStyleSpecifierAlignment, sizeof(CGFloat), &lineSpacing}
     };
     
     
@@ -106,13 +94,26 @@
     
     CTParagraphStyleRef theParagraphRef = CTParagraphStyleCreate(theSettings, kNumberOfSettings);
     
-    UIColor * textColor = config.textColor;
-    
+    UIColor * textColor;
+    switch (textModel) {
+        case TextModelContent:
+            textColor = config.textColor;
+            break;
+        case TextModelImage:
+            textColor = config.textColor;
+            break;
+        case TextModelLink:
+            textColor = config.linkColor;
+            break;
+        case TextModelNumber:
+            textColor = config.numberColor;
+            break;
+
+    }
     NSMutableDictionary * dict = [NSMutableDictionary dictionary];
     dict[(id)kCTForegroundColorAttributeName] = (id)textColor.CGColor;
     dict[(id)kCTFontAttributeName] = (__bridge id)fontRef;
     dict[(id)kCTParagraphStyleAttributeName] = (__bridge id)theParagraphRef;
-//    dict[(id)kCTkernAttributeName] = (__bridge id)theParagraphRef;
     CFRelease(theParagraphRef);
     CFRelease(fontRef);
     return dict;
@@ -161,8 +162,9 @@
 
 #pragma mark - 文字处理
 + (NSMutableAttributedString *)parseAttributedWithContent:(NSString *)content
-                                                        config:(DDCTFrameParserConfig*)config {
-    NSMutableDictionary *attributes = [self attributesWithConfig:config];
+                                                   config:(DDCTFrameParserConfig*)config textModel:(TextModel)textModel
+{
+    NSMutableDictionary *attributes = [self attributesWithConfig:config textModel:textModel];
     return [[NSMutableAttributedString alloc] initWithString:content attributes:attributes];
 }
 
@@ -171,7 +173,7 @@
 + (NSAttributedString *)parseImageDataFromconfig:(DDCTFrameParserConfig*)config {
     // CTRunDelegateCallbacks才是真正定义字形宽度、向上高度和向下高度的结构体
 //    NSDictionary *dict = @{@"imageWidth":[NSNumber numberWithFloat:config.fontSize]};
-    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithFloat:config.fontSize],@"imageWidth", nil];
+    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithFloat:config.textSize],@"imageWidth", nil];
     
     CTRunDelegateCallbacks callbacks;
     memset(&callbacks, 0, sizeof(CTRunDelegateCallbacks));
@@ -184,7 +186,7 @@
     // 使用0xFFFC作为空白的占位符
     unichar objectReplacementChar = 0xFFFC;
     NSString * content = [NSString stringWithCharacters:&objectReplacementChar length:1];
-    NSDictionary * attributes = [self attributesWithConfig:config];
+    NSDictionary * attributes = [self attributesWithConfig:config textModel:TextModelImage];
     NSMutableAttributedString * space = [[NSMutableAttributedString alloc] initWithString:content
                                                                                attributes:attributes];
     CFAttributedStringSetAttribute((CFMutableAttributedStringRef)space, CFRangeMake(0, 1),

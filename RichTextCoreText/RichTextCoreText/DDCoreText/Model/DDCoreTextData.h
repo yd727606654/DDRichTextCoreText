@@ -16,4 +16,5 @@
 @property (strong, nonatomic) NSArray * linkArray;
 @property (strong, nonatomic) NSArray * phoneNumberArray;
 @property (strong, nonatomic) NSAttributedString *content;
+@property (copy, nonatomic) NSString *text;
 @end

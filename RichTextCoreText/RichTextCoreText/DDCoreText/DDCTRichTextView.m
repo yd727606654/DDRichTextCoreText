@@ -26,7 +26,7 @@ typedef NS_ENUM(NSUInteger, DDCTRichTextViewState) {
 
 @end
 
-NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
+
 
 @implementation DDCTRichTextView
 
@@ -77,7 +77,7 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
 }
 - (void)customCopy:(id)sender
 {
-    NSString *contentString = _text;
+    NSString *contentString = _data.text;
     UIPasteboard *pboard = [UIPasteboard generalPasteboard];
     pboard.string = contentString;
     
@@ -153,25 +153,25 @@ NSString *const patternString = @"#\\[face/png/f_static_(\\d+).png\\]#";
     
 }
 
--(void)setText:(NSString *)text
+-(NSString *)text
 {
-    _text = text;
-    if (!_pattern) {
-        _pattern = patternString;
+    if (_data == nil) {
+        return nil;
     }
- 
-    _data = [DDCTFrameParser parserText:self];
-    CGRect frame = self.frame;
-    frame.size.height = _data.height;
-    frame.size.width = _data.width;
-    self.frame = frame;
-    
+    return _data.text;
 }
 
--(CGFloat)height
+-(CGSize)size
 {
-   return _data.height;
- 
+    if (_data == nil) {
+        return CGSizeMake(0, 0);
+    }
+    return CGSizeMake(_data.width, _data.height);
+}
+-(void)setData:(DDCoreTextData *)data
+{
+    _data = data;
+    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, data.width, data.height);
 }
 - (void)drawRect:(CGRect)rect {
     [super drawRect:rect];

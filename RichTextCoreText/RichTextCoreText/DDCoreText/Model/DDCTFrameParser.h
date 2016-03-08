@@ -8,9 +8,9 @@
 
 #import <Foundation/Foundation.h>
 @class DDCoreTextData;
-@class DDCTRichTextView;
+@class DDCTFrameParserConfig;
 @interface DDCTFrameParser : NSObject
 
-+ (DDCoreTextData *)parserText:(DDCTRichTextView *)richText;
++ (DDCoreTextData *)parserText:(DDCTFrameParserConfig *)config text:(NSString *)tex;
 
 @end

@@ -8,7 +8,8 @@
 
 #import "ViewController.h"
 #import "DDCTRichTextView.h"
-#define kContentString @"12qq"
+#import "DDCTFrameParser.h"
+#define kContentString @"12qqwww.baidu.comwerwerw18220862691"
 @interface ViewController ()<DDCTRichTextViewDelegate>
 
 @end
@@ -17,11 +18,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    DDCTFrameParserConfig *config = [[DDCTFrameParserConfig alloc] init];
+    DDCoreTextData *data = [DDCTFrameParser parserText:config text:kContentString];
     DDCTRichTextView *textV = [[DDCTRichTextView alloc] initWithFrame:CGRectMake(100, 100, 100, 100)];
-    textV.text = kContentString;
+    textV.data = data;
     textV.delegate = self;
-    textV.clickModel = DDCTRichTextViewLinkAble ;
+   
     [self.view addSubview:textV];
 }
 -(void)DDTouchTextViewModel:(DDTouchTextViewModel)model text:(NSString *)text
